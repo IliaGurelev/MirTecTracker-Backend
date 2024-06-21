@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace tracker.Models
 {
-    public class Briefcase
+    public class Status
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -12,12 +12,6 @@ namespace tracker.Models
         [Required]
         public string Name { get; set; }
 
-        [Required]
-        public int ColorId { get; set;}
-
-        [ForeignKey("ColorId")]
-        public Color Color { get; set;}
-
-        public ICollection<Models.Task> Task { get; set; }
+        public ICollection<Task> Tasks { get; set; }
     }
 }

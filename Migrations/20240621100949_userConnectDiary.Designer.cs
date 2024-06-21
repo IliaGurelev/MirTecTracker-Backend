@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using tracker.Data;
@@ -11,9 +12,11 @@ using tracker.Data;
 namespace tracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240621100949_userConnectDiary")]
+    partial class userConnectDiary
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,6 +98,9 @@ namespace tracker.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("StatusId")
+                        .HasColumnType("integer");
+
                     b.Property<TimeOnly>("TimeStart")
                         .HasColumnType("time without time zone");
 
@@ -103,7 +109,7 @@ namespace tracker.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Diary");
                 });
@@ -221,7 +227,7 @@ namespace tracker.Migrations
                 {
                     b.HasOne("tracker.Models.User", "User")
                         .WithMany("Diary")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

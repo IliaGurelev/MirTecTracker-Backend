@@ -48,7 +48,14 @@ namespace tracker.Controller
             _context.Briefcases.Add(briefcase);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBriefcase", new { id = briefcase.Id }, briefcaseDto);
+            var responseDto = new
+            {
+                briefcase.Id,
+                briefcaseDto.Name,
+                briefcaseDto.Color
+            };
+
+            return CreatedAtAction("GetBriefcase", new { id = briefcase.Id }, responseDto);
         }
 
         [HttpPut("{id}")]

@@ -1,9 +1,9 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace tracker.Models
 {
-    public class Briefcase
+    public class User
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -13,11 +13,14 @@ namespace tracker.Models
         public string Name { get; set; }
 
         [Required]
-        public int ColorId { get; set;}
+        public string Email { get; set; }
 
-        [ForeignKey("ColorId")]
-        public Color Color { get; set;}
+        [Required]
+        public string Password { get; set; }
+
+        public string Avatar { get; set; }
 
         public ICollection<Models.Task> Task { get; set; }
+        public ICollection<Diary> Diary { get; set; }
     }
 }

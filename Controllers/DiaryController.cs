@@ -17,10 +17,11 @@ namespace tracker.Controller
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Diary>>> GetDiary()
+        public async Task<ActionResult<IEnumerable<DiaryDto>>> GetDiary([FromQuery] int userId)
         {
-            return await _context.Diary
-                .Select(d => new Diary
+            var diaries = await _context.Diary
+                .Where(d => d.UserId == userId)
+                .Select(d => new DiaryDto
                 {
                     Id = d.Id,
                     Name = d.Name,
@@ -28,12 +29,24 @@ namespace tracker.Controller
                     TimeStart = d.TimeStart,
                     DueDate = d.DueDate,
                 }).ToListAsync();
+
+            return diaries;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Diary>> PostDiary(Diary diary)
+        public async Task<ActionResult<DiaryDto>> PostDiary([FromQuery] int userId, DiaryDto diary)
         {
-            _context.Diary.Add(diary);
+            var diaryDb = new Diary
+            {
+                Id = diary.Id,
+                Name = diary.Name,
+                Description = diary.Description,
+                TimeStart = diary.TimeStart,
+                DueDate = diary.DueDate,
+                UserId = userId,
+            };
+
+            _context.Diary.Add(diaryDb);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetDiary", new { id = diary.Id }, diary);
@@ -52,6 +65,19 @@ namespace tracker.Controller
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        public class DiaryDto
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public string Description { get; set; }
+
+            public TimeOnly TimeStart { get; set; }
+
+            public DateOnly DueDate { get; set; }
         }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using tracker.Data;
@@ -11,9 +12,11 @@ using tracker.Data;
 namespace tracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240620092234_TestTasks")]
+    partial class TestTasks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,12 +101,7 @@ namespace tracker.Migrations
                     b.Property<TimeOnly>("TimeStart")
                         .HasColumnType("time without time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Diary");
                 });
@@ -217,17 +215,6 @@ namespace tracker.Migrations
                     b.Navigation("Color");
                 });
 
-            modelBuilder.Entity("tracker.Models.Diary", b =>
-                {
-                    b.HasOne("tracker.Models.User", "User")
-                        .WithMany("Diary")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("tracker.Models.Task", b =>
                 {
                     b.HasOne("tracker.Models.Briefcase", "Briefcase")
@@ -260,11 +247,6 @@ namespace tracker.Migrations
             modelBuilder.Entity("tracker.Models.Status", b =>
                 {
                     b.Navigation("Tasks");
-                });
-
-            modelBuilder.Entity("tracker.Models.User", b =>
-                {
-                    b.Navigation("Diary");
                 });
 #pragma warning restore 612, 618
         }

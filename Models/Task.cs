@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace tracker.Models
 {
-    public class Diary
+    public class Task
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -16,15 +16,22 @@ namespace tracker.Models
         public string Description { get; set; }
 
         [Required]
-        public TimeOnly TimeStart { get; set; }
+        public DateOnly CreatedAt { get; set; }
 
         [Required]
         public DateOnly DueDate { get; set; }
 
-        [ForeignKey("UserId")]
-        public virtual User User { get; set; }
+        [ForeignKey("BriefcaseId")]
+        public virtual Briefcase Briefcase { get; set; }
+
+        public int BriefcaseId { get; set; }
+
+        [ForeignKey("StatusId")]
+        public virtual Status Status { get; set; }
 
         [Required]
-        public int UserId { get; set; }
+        public int StatusId { get; set; }
+
+        public virtual ICollection<User> Workers { get; set; }
     }
 }
