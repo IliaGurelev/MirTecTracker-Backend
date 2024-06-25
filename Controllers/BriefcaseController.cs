@@ -18,20 +18,22 @@ namespace tracker.Controller
             _colorService = colorService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<BriefcaseDto>>> GetBriefcase()
+        [HttpGet("{dashboardId}")]
+        public async Task<ActionResult<IEnumerable<BriefcaseDto>>> GetBriefcase(int dashboardId)
         {
             return await _context.Briefcases
+                .Where(d => d.DashboardId == dashboardId)
                 .Select(d => new BriefcaseDto
                 {
                     Id = d.Id,
                     Name = d.Name,
                     Color = d.Color.Name,
+                    DashboardId = d.DashboardId,
                 }).ToListAsync();
         }
 
         [HttpPost]
-        public async Task<ActionResult<Briefcase>> PostBriefcase(BriefcaseDto briefcaseDto)
+        public async Task<ActionResult<BriefcaseDto>> PostBriefcase(BriefcaseDto briefcaseDto)
         {
             var color = await _colorService.GetColorByNameAsync(briefcaseDto.Color);
             if (color == null)
@@ -43,19 +45,21 @@ namespace tracker.Controller
             {
                 Name = briefcaseDto.Name,
                 ColorId = color.Id,
+                DashboardId = briefcaseDto.DashboardId,
             };
 
             _context.Briefcases.Add(briefcase);
             await _context.SaveChangesAsync();
 
-            var responseDto = new
+            var responseDto = new BriefcaseDto()
             {
-                briefcase.Id,
-                briefcaseDto.Name,
-                briefcaseDto.Color
+                Id =briefcase.Id,
+                Name =briefcaseDto.Name,
+                Color =briefcaseDto.Color,
+                DashboardId = briefcaseDto.DashboardId,
             };
 
-            return CreatedAtAction("GetBriefcase", new { id = briefcase.Id }, responseDto);
+            return responseDto;
         }
 
         [HttpPut("{id}")]
@@ -87,7 +91,7 @@ namespace tracker.Controller
             {
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetBriefcase", new { id = briefcase.Id }, briefcaseDto);
+                return Ok(briefcaseDto);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -105,7 +109,7 @@ namespace tracker.Controller
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBriefcase(int id)
+        public async Task<IActionResult> DeleteDashbo(int id)
         {
             var briefcase = await _context.Briefcases.FindAsync(id);
             if(briefcase == null)
@@ -116,7 +120,7 @@ namespace tracker.Controller
             _context.Briefcases.Remove(briefcase);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(id);
         }
 
         private async Task<bool> BriefcaseExist(int id)
@@ -131,6 +135,8 @@ namespace tracker.Controller
             public string Name { get; set; }
 
             public string Color { get; set; }
+
+            public int DashboardId { get; set; }
         }
     }
 }

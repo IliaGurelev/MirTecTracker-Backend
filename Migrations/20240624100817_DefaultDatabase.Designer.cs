@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using tracker.Data;
@@ -11,9 +12,11 @@ using tracker.Data;
 namespace tracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240624100817_DefaultDatabase")]
+    partial class DefaultDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,21 +40,6 @@ namespace tracker.Migrations
                     b.ToTable("TaskWorkers", (string)null);
                 });
 
-            modelBuilder.Entity("UserDashboard", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DashboardId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserId", "DashboardId");
-
-                    b.HasIndex("DashboardId");
-
-                    b.ToTable("UserDashboard");
-                });
-
             modelBuilder.Entity("tracker.Models.Briefcase", b =>
                 {
                     b.Property<int>("Id")
@@ -60,13 +48,7 @@ namespace tracker.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BriefcaseId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ColorId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("DashboardId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -75,11 +57,7 @@ namespace tracker.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BriefcaseId");
-
                     b.HasIndex("ColorId");
-
-                    b.HasIndex("DashboardId");
 
                     b.ToTable("Briefcases");
                 });
@@ -99,31 +77,6 @@ namespace tracker.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Colors");
-                });
-
-            modelBuilder.Entity("tracker.Models.Dashboard", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Invite")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Dashboards");
                 });
 
             modelBuilder.Entity("tracker.Models.Diary", b =>
@@ -189,9 +142,6 @@ namespace tracker.Migrations
                     b.Property<DateOnly>("CreatedAt")
                         .HasColumnType("date");
 
-                    b.Property<int>("DashboardId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -209,8 +159,6 @@ namespace tracker.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BriefcaseId");
-
-                    b.HasIndex("DashboardId");
 
                     b.HasIndex("StatusId");
 
@@ -261,42 +209,13 @@ namespace tracker.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("UserDashboard", b =>
-                {
-                    b.HasOne("tracker.Models.Dashboard", null)
-                        .WithMany()
-                        .HasForeignKey("DashboardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_UserDashboard_DashboardId");
-
-                    b.HasOne("tracker.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_UserDashboard_UserId");
-                });
-
             modelBuilder.Entity("tracker.Models.Briefcase", b =>
                 {
-                    b.HasOne("tracker.Models.Briefcase", "Briefcases")
-                        .WithMany()
-                        .HasForeignKey("BriefcaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("tracker.Models.Color", "Color")
                         .WithMany("Briefcases")
                         .HasForeignKey("ColorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("tracker.Models.Dashboard", null)
-                        .WithMany("Briefcase")
-                        .HasForeignKey("DashboardId");
-
-                    b.Navigation("Briefcases");
 
                     b.Navigation("Color");
                 });
@@ -320,12 +239,6 @@ namespace tracker.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("tracker.Models.Dashboard", "Dashboards")
-                        .WithMany("Tasks")
-                        .HasForeignKey("DashboardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("tracker.Models.Status", "Status")
                         .WithMany("Tasks")
                         .HasForeignKey("StatusId")
@@ -333,8 +246,6 @@ namespace tracker.Migrations
                         .IsRequired();
 
                     b.Navigation("Briefcase");
-
-                    b.Navigation("Dashboards");
 
                     b.Navigation("Status");
                 });
@@ -347,13 +258,6 @@ namespace tracker.Migrations
             modelBuilder.Entity("tracker.Models.Color", b =>
                 {
                     b.Navigation("Briefcases");
-                });
-
-            modelBuilder.Entity("tracker.Models.Dashboard", b =>
-                {
-                    b.Navigation("Briefcase");
-
-                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("tracker.Models.Status", b =>

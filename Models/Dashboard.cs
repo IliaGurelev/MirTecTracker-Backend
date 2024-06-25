@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace tracker.Models
 {
-    public class User
+    public class Dashboard
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -13,17 +13,15 @@ namespace tracker.Models
         public string Name { get; set; }
 
         [Required]
-        public string Email { get; set; }
+        public string Color { get; set; }
 
         [Required]
-        public string Password { get; set; }
+        public string Invite { get; set; }
 
-        public string Avatar { get; set; }
+        public ICollection<Task> Tasks { get; set; }
 
-        public ICollection<Models.Task> Task { get; set; }
-        public ICollection<Diary> Diary { get; set; }
+        public ICollection<User> Users { get; set; }
 
-        public ICollection<Dashboard> Dashboards { get; set; }
-
+        public ICollection<Briefcase> Briefcase { get; set; }
     }
 }

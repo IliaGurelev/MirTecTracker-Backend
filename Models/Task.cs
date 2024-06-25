@@ -33,5 +33,10 @@ namespace tracker.Models
         public int StatusId { get; set; }
 
         public virtual ICollection<User> Workers { get; set; }
+
+        [ForeignKey("DashboardId")]
+        public virtual Dashboard Dashboards { get; set; }
+
+        public int DashboardId { get; set; }
     }
 }

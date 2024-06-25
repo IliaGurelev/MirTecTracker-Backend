@@ -18,6 +18,12 @@ namespace tracker.Models
         [ForeignKey("ColorId")]
         public Color Color { get; set;}
 
+        [Required]
+        public int DashboardId { get; set; }
+
+        [ForeignKey("DashboardId")]
+        public Dashboard Dashboards { get; set; }
+
         public ICollection<Models.Task> Task { get; set; }
     }
 }

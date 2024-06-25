@@ -27,6 +27,26 @@ namespace tracker.Controller
             _configuration = configuration;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<User>> GetUsers()
+        {
+            var user = await _context.Users
+                .Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Avatar = u.Avatar,
+                })
+                .ToListAsync();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<User>> GetUserById(int id) 
@@ -88,12 +108,20 @@ namespace tracker.Controller
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser(UserNotId userNotId)
         {
-            if (await EmailExists(user.Email))
+            if (await EmailExists(userNotId.Email))
             {
                 return Conflict("Email уже используется.");
             }
+
+            User user = new User()
+            {
+                Name = userNotId.Name,
+                Avatar = userNotId.Avatar,
+                Email = userNotId.Email,
+                Password = userNotId.Password,
+            };
 
             _context.Add(user);
             await _context.SaveChangesAsync();
@@ -141,6 +169,17 @@ namespace tracker.Controller
             public string Name { get; set; }
 
             public string Avatar { get; set; }
+        }
+
+        public class UserNotId
+        {
+            public string Name { get; set; }
+
+            public string Avatar { get; set; }
+
+            public string Email { get; set; }
+
+            public string Password { get; set; }
         }
     }
 }

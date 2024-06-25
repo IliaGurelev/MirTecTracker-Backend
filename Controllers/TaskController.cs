@@ -18,12 +18,13 @@ namespace tracker.Controller
             _statusService = statusService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasks()
+        [HttpGet("{dashboardId}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasks(int dashboardId)
         {
             var tasks = await _context.Tasks
+                .Where(t => t.DashboardId == dashboardId)
                 .Include(t => t.Briefcase)
-                .ThenInclude(b => b.Color) 
+                .ThenInclude(b => b.Color)
                 .Include(t => t.Status)
                 .Include(t => t.Workers)
                 .ToListAsync();
@@ -36,11 +37,49 @@ namespace tracker.Controller
                 Status = task.Status.Name,
                 CreatedAt = task.CreatedAt,
                 DueDate = task.DueDate,
+                DashboardId = task.DashboardId,
                 Briefcase = new BriefcaseDto
                 {
                     Id = task.Briefcase.Id,
                     Name = task.Briefcase.Name,
-                    Color = task.Briefcase.Color.Name 
+                    Color = task.Briefcase.Color.Name
+                },
+                Workers = task.Workers.Select(w => new WorkerDto
+                {
+                    Id = w.Id,
+                    Name = w.Name,
+                    Avatar = w.Avatar
+                }).ToList()
+            }).ToList();
+
+            return Ok(taskDtos);
+        }
+
+        [HttpGet("briefcase/{briefcaseId}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksByBriefcase(int briefcaseId)
+        {
+            var tasks = await _context.Tasks
+                .Where(t => t.BriefcaseId == briefcaseId)
+                .Include(t => t.Briefcase)
+                .ThenInclude(b => b.Color)
+                .Include(t => t.Status)
+                .Include(t => t.Workers)
+                .ToListAsync();
+
+            var taskDtos = tasks.Select(task => new TaskDto
+            {
+                Id = task.Id,
+                Name = task.Name,
+                Description = task.Description,
+                Status = task.Status.Name,
+                CreatedAt = task.CreatedAt,
+                DueDate = task.DueDate,
+                DashboardId = task.DashboardId,
+                Briefcase = new BriefcaseDto
+                {
+                    Id = task.Briefcase.Id,
+                    Name = task.Briefcase.Name,
+                    Color = task.Briefcase.Color.Name
                 },
                 Workers = task.Workers.Select(w => new WorkerDto
                 {
@@ -54,7 +93,7 @@ namespace tracker.Controller
         }
 
         [HttpPost]
-        public async Task<ActionResult<Diary>> PostTask(TaskDto taskDto)
+        public async Task<ActionResult<TaskDto>> PostTask(TaskDto taskDto)
         {
             var status = await _statusService.GetStatusByNameAsync(taskDto.Status);
             if (status == null)
@@ -70,12 +109,15 @@ namespace tracker.Controller
                 CreatedAt = taskDto.CreatedAt,
                 DueDate = taskDto.DueDate,
                 BriefcaseId = taskDto.Briefcase.Id,
+                DashboardId = taskDto.DashboardId,
             };
 
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTasks", new { id = task.Id }, taskDto);
+            taskDto.Id = task.Id;
+
+            return taskDto;
         }
 
         [HttpPut("{id}")]
@@ -105,6 +147,7 @@ namespace tracker.Controller
             task.DueDate = taskDto.DueDate;
             task.BriefcaseId = taskDto.Briefcase.Id;
 
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -116,6 +159,35 @@ namespace tracker.Controller
                 return NoContent();
             }
 
+        }
+
+        [HttpPost("addWorker")]
+        public async Task<IActionResult> AddWorkerToTask(AddWorkerToTaskDto dto)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Workers)
+                .FirstOrDefaultAsync(t => t.Id == dto.TaskId);
+
+            /*if (task == null)
+            {
+                return NotFound("Task not found");
+            }*/
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == dto.UserId);
+
+            /*if (user == null)
+            {
+                return NotFound("User not found");
+            }*/
+
+            if (!task.Workers.Contains(user))
+            {
+                task.Workers.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok();
         }
 
         [HttpDelete("{id}")]
@@ -133,6 +205,35 @@ namespace tracker.Controller
             return NoContent();
         }
 
+        [HttpDelete("removeWorker")]
+        public async Task<IActionResult> RemoveWorkerFromTask(AddWorkerToTaskDto dto)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Workers)
+                .FirstOrDefaultAsync(t => t.Id == dto.TaskId);
+
+            if (task == null)
+            {
+                return NotFound("Task not found");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == dto.UserId);
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            if (task.Workers.Contains(user))
+            {
+                task.Workers.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok();
+        }
+
         public class TaskDto
         {
             public int Id { get; set; }
@@ -143,6 +244,7 @@ namespace tracker.Controller
             public DateOnly DueDate { get; set; }
             public BriefcaseDto Briefcase { get; set; }
             public List<WorkerDto> Workers { get; set; }
+            public int DashboardId {  get; set; }
         }
 
         public class BriefcaseDto
@@ -158,5 +260,11 @@ namespace tracker.Controller
             public string Name { get; set; }
             public string Avatar { get; set; }
         }
+        public class AddWorkerToTaskDto
+        {
+            public int TaskId { get; set; }
+            public int UserId { get; set; }
+        }
+
     }
 }
